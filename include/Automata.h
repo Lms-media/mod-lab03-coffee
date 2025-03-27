@@ -29,7 +29,7 @@ class Automata {
       std::pair<CHOISE_STATES, double> state);
 
  public:
-  Automata(std::ostream& os);
+  explicit Automata(std::ostream& os);
   Automata(std::ostream& os, std::vector<menuItem> customMenu);
 
   void on();
@@ -42,4 +42,4 @@ class Automata {
   double cancel();
 };
 
-#endif
+#endif  // INCLUDE_AUTOMATA_H_

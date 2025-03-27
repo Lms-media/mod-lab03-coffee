@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <vector>
+#include <utility>
 
 Automata::Automata(std::ostream& os) : stream{os} {
   menu.push_back(menuItem{"Espresso", 15});
@@ -90,11 +92,13 @@ std::pair<CHOISE_STATES, double> Automata::choice(size_t drinkIndex) {
         double toReturn = singleCash;
         cook();
         return printChoiseState(std::pair(CHOISE_STATES::OK, toReturn));
-      } else
+      } else {
         return printChoiseState(
             std::pair(CHOISE_STATES::NOT_ENOUGHT_MONEY, cancel()));
-    } else
+      }
+    } else {
       return printChoiseState(std::pair(CHOISE_STATES::INVALID_ITEM, cancel()));
+    }
   }
   return printChoiseState(std::pair(CHOISE_STATES::INACCESSIBLE, 0));
 }

@@ -1,6 +1,8 @@
 // Copyright 2022 GHA Test Team
 
 #include <gtest/gtest.h>
+#include <utility>
+#include <iostream>
 
 #include "Automata.h"
 
