@@ -4,13 +4,15 @@
 #include "Automata.h"
 
 int main() {
-  Automata* automata = new Automata();
+  Automata* automata = new Automata(std::cout);
   automata->on();
-  for (menuItem item : automata->getMenu()) {
-    std::cout << item.name << ": " << item.price << std::endl;
-  }
+  automata->getMenu();
+  automata->getCashe();
   automata->coin(20);
-  std::cout << static_cast<int>(automata->getState(std::cout)) << std::endl;
-  std::cout << static_cast<int>(automata->choice(2).first) << std::endl;
+  automata->getCashe();
+  automata->getState();
+  automata->choice(2);
+  automata->coin(100);
+  automata->choice(2);
   return 0;
 }

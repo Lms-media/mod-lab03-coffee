@@ -18,22 +18,26 @@ class Automata {
  private:
   double cash = 0;
   double singleCash = 0;
+  std::ostream& stream;
   std::vector<menuItem> menu;
   STATES state = STATES::OFF;
 
   bool check(size_t drinkIndex);
   void cook();
   void finish();
+  std::pair<CHOISE_STATES, double> printChoiseState(
+      std::pair<CHOISE_STATES, double> state);
 
  public:
-  Automata();
-  Automata(std::vector<menuItem> customMenu);
+  Automata(std::ostream& os);
+  Automata(std::ostream& os, std::vector<menuItem> customMenu);
 
   void on();
   void off();
   void coin(double amount);
-  std::vector<menuItem> getMenu() const;
-  STATES getState(std::ostream& stream) const;
+  std::vector<menuItem> getMenu();
+  double getCashe();
+  STATES getState();
   std::pair<CHOISE_STATES, double> choice(size_t drinkIndex);
   double cancel();
 };

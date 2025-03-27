@@ -5,7 +5,7 @@
 #include <iostream>
 #include <thread>
 
-Automata::Automata() {
+Automata::Automata(std::ostream& os) : stream{os} {
   menu.push_back(menuItem{"Espresso", 15});
   menu.push_back(menuItem{"Americano", 20});
   menu.push_back(menuItem{"Cappuccino", 35});
@@ -13,7 +13,8 @@ Automata::Automata() {
   menu.push_back(menuItem{"Macchiato", 65});
 }
 
-Automata::Automata(std::vector<menuItem> customMenu) : menu{menu} {}
+Automata::Automata(std::ostream& os, std::vector<menuItem> customMenu)
+    : menu{menu}, stream{os} {}
 
 void Automata::on() {
   if (state == STATES::OFF) state = STATES::WAIT;
@@ -28,32 +29,52 @@ void Automata::off() {
 
 void Automata::coin(double amount) {
   if (state == STATES::WAIT || state == STATES::ACCEPT) {
+    if (amount <= 0) {
+      stream << "invalid amount value\n";
+      return;
+    }
     singleCash += amount;
     state = STATES::ACCEPT;
   }
 }
 
-std::vector<menuItem> Automata::getMenu() const { return menu; }
+std::vector<menuItem> Automata::getMenu() {
+  if (state != STATES::OFF) {
+    for (menuItem item : menu) {
+      stream << item.name << ": " << item.price << "\n";
+    }
+    return menu;
+  }
+  return std::vector<menuItem>();
+}
 
-STATES Automata::getState(std::ostream& stream) const {
+double Automata::getCashe() {
+  if (state != STATES::OFF) {
+    stream << "Amount contributed: " << singleCash << "\n";
+    return singleCash;
+  }
+  return 0;
+}
+
+STATES Automata::getState() {
   switch (state) {
     case STATES::OFF:
-      stream << "OFF" << std::endl;
+      stream << "OFF\n";
       break;
     case STATES::WAIT:
-      stream << "WAIT" << std::endl;
+      stream << "WAIT\n";
       break;
     case STATES::ACCEPT:
-      stream << "ACCEPT" << std::endl;
+      stream << "ACCEPT\n";
       break;
     case STATES::CHECK:
-      stream << "CHECK" << std::endl;
+      stream << "CHECK\n";
       break;
     case STATES::COOK:
-      stream << "COOK" << std::endl;
+      stream << "COOK\n";
       break;
     default:
-      stream << "UNKNOWN" << std::endl;
+      stream << "UNKNOWN\n";
       break;
   }
   return state;
@@ -68,13 +89,36 @@ std::pair<CHOISE_STATES, double> Automata::choice(size_t drinkIndex) {
         singleCash -= menu[drinkIndex].price;
         double toReturn = singleCash;
         cook();
-        return std::pair(CHOISE_STATES::OK, toReturn);
+        return printChoiseState(std::pair(CHOISE_STATES::OK, toReturn));
       } else
-        return std::pair(CHOISE_STATES::NOT_ENOUGHT_MONEY, cancel());
+        return printChoiseState(
+            std::pair(CHOISE_STATES::NOT_ENOUGHT_MONEY, cancel()));
     } else
-      return std::pair(CHOISE_STATES::INVALID_ITEM, cancel());
+      return printChoiseState(std::pair(CHOISE_STATES::INVALID_ITEM, cancel()));
   }
-  return std::pair(CHOISE_STATES::INACCESSIBLE, 0);
+  return printChoiseState(std::pair(CHOISE_STATES::INACCESSIBLE, 0));
+}
+
+std::pair<CHOISE_STATES, double> Automata::printChoiseState(
+    std::pair<CHOISE_STATES, double> state) {
+  switch (state.first) {
+    case CHOISE_STATES::OK:
+      stream << "OK, change: " << state.second << "\n";
+      break;
+    case CHOISE_STATES::INVALID_ITEM:
+      stream << "INVALID_ITEM, change: " << state.second << "\n";
+      break;
+    case CHOISE_STATES::NOT_ENOUGHT_MONEY:
+      stream << "NOT_ENOUGHT_MONEY, change: " << state.second << "\n";
+      break;
+    case CHOISE_STATES::INACCESSIBLE:
+      stream << "INACCESSIBLE, change: " << state.second << "\n";
+      break;
+    default:
+      stream << "UNKNOWN, change: 0\n";
+      break;
+  }
+  return state;
 }
 
 bool Automata::check(size_t drinkIndex) {
@@ -95,6 +139,7 @@ double Automata::cancel() {
 void Automata::cook() {
   if (state == STATES::CHECK) {
     state = STATES::COOK;
+    stream << "Start cooking\n";
     std::this_thread::sleep_for(std::chrono::seconds(5));
     finish();
   }
@@ -102,6 +147,7 @@ void Automata::cook() {
 
 void Automata::finish() {
   if (state == STATES::COOK) {
+    stream << "Finished\n";
     singleCash = 0;
     state = STATES::WAIT;
   }
